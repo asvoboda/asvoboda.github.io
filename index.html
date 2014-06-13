@@ -2,96 +2,60 @@
 <head>
 	<script src="https://cdn.firebase.com/js/client/1.0.15/firebase.js"></script>
 	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/1.0.10/hammer.min.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
 	<link rel="stylesheet" type="text/css" href="https://www.firebase.com/css/example.css">
 
-	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+
+	<style>
+		.center {
+			margin: auto 0;
+			display: inline-block;
+		}
+	</style>
 </head>
 
 <body id="body">
-	<div>
-		<canvas id="canvas" width="500" height="500"></canvas>
+	<div id="turn"></div>
+	<div class="center">
+		<table class="tg">
+			<tr>
+				<td><input type="button" data-id="0,0"/></td>
+				<td><input type="button" data-id="0,1"/></td>
+				<td><input type="button" data-id="0,2"/></td>
+			</tr>
+			<tr>
+				<td><input type="button" data-id="1,0"/></td>
+				<td><input type="button" data-id="1,1"/></td>
+				<td><input type="button" data-id="1,2"/></td>
+			</tr>
+			<tr>
+				<td><input type="button" data-id="2,0"/></td>
+				<td><input type="button" data-id="2,1"/></td>
+				<td><input type="button" data-id="2,2"/></td>
+			</tr>
+		</table>
+    </div>
 	</div>
 	<input type="button" id="restartButton" value="Restart Game" class="hide" />
 	<div id="gameInProgress">Game is in progress.  You will automatically join if either player leaves.</div>
-
+	<div id="message">You are playing "<span id="playerNum"></span>"</div>
 
 <script>
-	var username;
-
-	var canvas = $("#canvas").get(0);
-	if (!canvas || !canvas.getContext || !canvas.getContext('2d')) {
-		alert("You must use a browser that supports HTML5 Canvas to run this demo.");
-	}
+	var playerNumber;
+	var controller;
 
 	var TicTacToe = {};
 
 	TicTacToe.GAME_LOCATION = "https://flickering-fire-9235.firebaseio.com/"
+
+	TicTacToe.BOARD = [[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]];
 	
-	TicTacToe.ROOM_LOCATION = "rooms";
-	TicTacToe.USERS_LOCATION = "users";
-	TicTacToe.BOARD_LOCATION = "board";
-
-
-	/*
-		ROOT
-			- ROOMS
-				- ROOMID/NAME
-					- PLAYERS (2)
-						- PLAYER NAME
-					- BOARD
-						- DATA
-	*/
-
-
-	TicTacToe.NUMBER_PLAYERS = 2;
-
-	TicTacToe.BOARD_WIDTH = 3; 
-	TicTacToe.BOARD_HEIGHT = 3;
-
-	TicTacToe.BLOCK_SIZE_PIXELS = 25;
-	TicTacToe.BOARD_HEIGHT_PIXELS = TicTacToe.BOARD_HEIGHT * TicTacToe.BLOCK_SIZE_PIXELS;
-	TicTacToe.BOARD_WIDTH_PIXELS = TicTacToe.BOARD_WIDTH * TicTacToe.BLOCK_SIZE_PIXELS;
-
-	TicTacToe.BLOCK_BORDER_COLOR = "#484848";
-	TicTacToe.BLOCKS = {'A': 
-  						{'symbol': '×', 'colour': 'red'}, 
-  					  'B':
-  					  	{'symbol': '?', 'colour': 'blue'}
-  					 };
 
 	function start() {
 		var gameRef = new Firebase(TicTacToe.GAME_LOCATION);
-		var controller = new TicTacToe.Controller(gameRef);
-		username = prompt("What's your handle?");
+		controller = new TicTacToe.Controller(gameRef);
 	}
 
-	TicTacToe.Board = function (canvas, ref, room) {
-		this.context = canvas.getContext('2d');
-		this.ref = ref;
-		this.snapshot = null;
-		this.isMyBoard = false;
-
-		// Listen for changes to our board.
-		var self = this;
-		ref.on(TicTacToe.ROOMS + '/' + room + '/' + 'data', function(snapshot) {
-			self.snapshot = snapshot;
-			self.draw();
-		});
-	};
-
-	TicTacToe.Board.prototype.draw = function() {
-		this.context.clearRect(0, 0, TicTacToe.BOARD_WIDTH_PIXELS, TicTacToe.BOARD_HEIGHT_PIXELS);
-		this.context.fillRect(50, 50, 50, 50);
-	};
-
-	TicTacToe.Board.prototype.clear = function() {
-
-	};
-
-	/**
-	* Manages joining the game, responding to keypresses, making the piece drop, etc.
-	*/
 	TicTacToe.PlayingState = { Watching: 0, Joining: 1, Playing: 2 };
 
 	TicTacToe.Controller = function (ref) {
@@ -106,44 +70,189 @@
 	TicTacToe.Controller.prototype.waitToJoin = function() {
 		var self = this;
 
-		// Listen to 'online' location for player0 and player1.
+		// check if we are player1 or player0
 		this.ref.child('player0/online').on('value', function(onlineSnap) {
-			if (onlineSnap.val() === null && self.PlayingState === TicTacToe.PlayingState.Watching) {
-				self.tryToJoin(username);
+			if (onlineSnap.val() === null && self.playingState === TicTacToe.PlayingState.Watching) {
+				self.tryToJoin(0);
 			}
 		});
 
 		this.ref.child('player1/online').on('value', function(onlineSnap) {
-			if (onlineSnap.val() === null && self.PlayingState === TicTacToe.PlayingState.Watching) {
-				self.tryToJoin(username);
+			if (onlineSnap.val() === null && self.playingState === TicTacToe.PlayingState.Watching) {
+				self.tryToJoin(1);
 			}
 		});
 
 	};
 
-	TicTacToe.Controller.prototype.tryToJoin = function(player) {
-		this.playingState = TicTacToe.playingState.Joining;
+	TicTacToe.Controller.prototype.tryToJoin = function(playerNum) {
+		this.playingState = TicTacToe.PlayingState.Joining;
 
+		// Use a transaction to make sure we don't conflict with other people trying to join.
 		var self = this;
-		this.ref.child(TicTacToe.ROOM_LOCATION + '/')
+		this.ref.child('player' + playerNum + '/online').transaction(function(onlineVal) {
+			if (onlineVal === null) {
+				return true; // Try to set online to true.
+			} else {
+				return; // Somebody must have beat us.  Abort the transaction.
+			}
+		}, function(error, committed) {
+			if (committed) { // We got in!
+				self.playingState = TicTacToe.PlayingState.Playing;
+				
+				playerNumber = playerNum;
+				var ch = (playerNumber) ? "x" : "o";
+				$('#playerNum').html(ch);
+				self.startPlaying();
+			} else {
+				self.playingState = TicTacToe.PlayingState.Watching;
+			}
+		});
 
 	};
 
-	TicTacToe.Controller.prototype.startPlaying = function(player) {
-		this.ref = username;
-		//this.opponentRef = 
-		this.ref.child('online').onDisconnect().remove();
+	TicTacToe.Controller.prototype.startPlaying = function() {
+		this.myPlayerRef = this.ref.child('player' + playerNumber);
+		this.opponentPlayerRef = this.ref.child('player' + (1 - playerNumber));
+		this.myPlayerRef.child('online').onDisconnect().remove();
+
 		$('#gameInProgress').hide();
+
+		this.waitForTurn();
+		this.getBoardUpdates();
+		this.waitForWin();
+		this.waitForDraw();
+	};
+
+	TicTacToe.Controller.prototype.waitForTurn = function() {
+		var self = this;
+
+		var func = function() {
+			var ev = this;
+			self.ref.child('turn').once('value', function(onlineSnap) {
+				if (onlineSnap.val() === playerNumber && self.playingState === TicTacToe.PlayingState.Playing) {
+					if ($(ev).val() === "  ") {
+						var pos = ev.getAttribute("data-id").split(",");
+						TicTacToe.BOARD[pos[0]][pos[1]] = playerNumber;
+						self.ref.child('board').set(TicTacToe.BOARD);
+						self.ref.child('turn').set(1-playerNumber);
+						if (self.checkWinCondition(playerNumber)) {
+							self.sendWin();
+							self.sendReset();
+						} else if (self.checkDraw()) {
+							self.sendDraw();
+							self.sendReset();
+						}
+					}
+				}
+			});
+		};
+
+		$('input').bind('click', func);
+	}
+
+	TicTacToe.Controller.prototype.getBoardUpdates = function() {
+		var self = this;
+
+		self.ref.child('board').on('value', function(onlineSnap) {
+			TicTacToe.BOARD = onlineSnap.val();
+			for (var i = 0; i < 3; i++) {
+				for (var j = 0; j <3; j++) {
+					var ch;
+					if (TicTacToe.BOARD[i][j] === -1) {
+						ch = "  ";
+					} else {
+						ch = (TicTacToe.BOARD[i][j]) ? "x" : "o";
+					}
+					$('input[data-id="' + i + ',' + j + '"]').prop("value", ch);
+				};
+			};
+		});
+
+		self.ref.child('turn').on('value', function(onlineSnap) {
+			if (onlineSnap.val() === playerNumber) {
+				$('#turn').html("It is your turn!");
+			} else {
+				$('#turn').html("");
+			}
+		});
+	};
+
+	TicTacToe.Controller.prototype.waitForWin = function () {
+		this.ref.child('win').on('value', function(onlineSnap) {
+			if (onlineSnap.val() === null) return;
+			if (onlineSnap.val() === playerNumber) {
+				alert("You've won!");
+			} else {
+				alert("You've lost!!! D:");
+			}
+		});
+	};
+
+	TicTacToe.Controller.prototype.waitForDraw = function () {
+		this.ref.child('draw').on('value', function(onlineSnap) {
+			if (onlineSnap.val() === null) return;
+			if (onlineSnap.val()) {
+				alert("You've drawn!");
+			}
+		});		
+	};	
+
+	TicTacToe.Controller.prototype.sendReset = function() {
+		this.ref.child('board').set([[-1,-1,-1],[-1,-1,-1],[-1,-1,-1]]);
+		this.ref.child('win').remove();
+		this.ref.child('draw').remove();
+	};
+
+	TicTacToe.Controller.prototype.sendWin = function() {
+		this.ref.child('win').set(playerNumber);
+	};
+
+	TicTacToe.Controller.prototype.sendDraw = function() {
+		this.ref.child('draw').set(true);
+	};
+
+	TicTacToe.Controller.prototype.checkWinCondition = function(playerNum) {
+		var win = false;
+		for (var j = 0; j <3; j++) {
+			if (this.checkColumn(j, playerNum) || this.checkRow(j, playerNum)) {
+				return true;
+			}
+		};
+		if (this.checkDiagonal(playerNum)) {
+			return true;
+		}
+		return false;
+	};
+
+	TicTacToe.Controller.prototype.checkDraw = function() {
+		return _.every(_.flatten(TicTacToe.BOARD), function(e) {
+			return (e === 1 || e === 0);
+		});
+	}
+
+	TicTacToe.Controller.prototype.checkColumn = function(column, playerNum) {
+		return TicTacToe.BOARD[0][column] === TicTacToe.BOARD[1][column] &&
+			 TicTacToe.BOARD[0][column] === TicTacToe.BOARD[2][column] &&
+			 TicTacToe.BOARD[0][column] === playerNum;
+	};
+
+	TicTacToe.Controller.prototype.checkRow = function(row, playerNum) {
+		return TicTacToe.BOARD[row][0] === TicTacToe.BOARD[row][1] &&
+			 TicTacToe.BOARD[row][0] === TicTacToe.BOARD[row][2] && 
+			 TicTacToe.BOARD[row][0] === playerNum;
+	};
+
+	TicTacToe.Controller.prototype.checkDiagonal = function(playerNum) {
+		return (TicTacToe.BOARD[0][0] === TicTacToe.BOARD[1][1] &&
+				TicTacToe.BOARD[0][0] === TicTacToe.BOARD[2][2] &&
+				TicTacToe.BOARD[0][0] === playerNum) ||
+				(TicTacToe.BOARD[2][0] === TicTacToe.BOARD[1][1] &&
+				TicTacToe.BOARD[2][0] === TicTacToe.BOARD[0][2] &&
+				TicTacToe.BOARD[2][0] === playerNum);
 	};
 
 	start();
-
-	Hammer(document.getElementById('canvas')).on('tap', function(event) {
-		var context = canvas.getContext('2d');
-		var center = event.gesture.center;
-		var offset = $('#canvas').offset();
-		context.fillRect(center.pageX - offset.left, center.pageY - offset.top, 50, 50);
-	});
 
 </script>
 </body>
