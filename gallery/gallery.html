@@ -1,12 +1,100 @@
----
-layout: default
----
+<!DOCTYPE html>
+<html>
 
-<script language="javascript" type="text/javascript" src="{{"/javascripts/utils.js" | prepend: site.baseurl}}"></script>
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Andrew Svoboda</title>
+  <meta name="description" content="Powered by Jekyll. A place to show off my hobbies, interests, and projects.
+">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/font-awesome.css">
+  <link rel="canonical" href="http://andrewsvoboda.me/gallery/gallery.html">
+  <link rel="alternate" type="application/rss+xml" title="Andrew Svoboda" href="http://andrewsvoboda.me/feed.xml" />
+  
+  <script language="javascript" type="text/javascript" src="/javascripts/jquery-2.1.4.min.js"></script>
+  <script language="javascript" type="text/javascript" src="/javascripts/bootstrap.min.js"></script>
+  <script language="javascript" type="text/javascript" src="/javascripts/underscore-min.js"></script>
+</head>
+
+
+  <body>
+
+    <nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">Andrew Svoboda</a>
+    </div>
+
+	  <!-- Collect the nav links, forms, and other content for toggling -->
+	  <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">Projects <b class="caret"></b></a>
+					<ul class="dropdown-menu">
+						<li><a href="http://arcane-journey-8886.herokuapp.com/">Multiplayer Roguelike</a></li>
+						<li><a href="http://powerful-lake-7302.herokuapp.com/">House of Commons</a></li>						
+					</ul>                    
+				</li>
+				<li><a href="/gallery/gallery.html">Gallery</a></li>
+                <li><a href="/resume/asvoboda.pdf">Resume</a></li>
+            </ul>
+	  </div>
+  </div><!-- /.container-fluid -->
+</nav>
+
+
+    <div class="container-fluid">
+        <script language="javascript" type="text/javascript" src="/javascripts/utils.js"></script>
 
 <div id="gallery" class="container-fluid">
 
-	{% image_set images --container-tag=div --wrap-tag=div %}
+	<div class='image-set'>
+<div class='image-item'>
+<img src='/images/pacific.jpg' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/m-colour.jpg' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/park.jpg' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/pupp.jpg' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/light-up.jpg' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/pula.jpg' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/sidewalk.jpg' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/morning.JPG' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/inukshuk.JPG' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/canoe.JPG' class='image'>
+</div>
+<div class='image-item'>
+<img src='/images/corner.JPG' class='image'>
+</div>
+</div>
+
 
 </div>
 
@@ -31,3 +119,8 @@ layout: default
 		});
 	});
 </script>
+    </div>
+
+  </body>
+
+</html>
